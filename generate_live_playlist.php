@@ -12,6 +12,13 @@ function vodIdFromName($name) {
 }
 
 /**
+ * تولید ID یکتا بر اساس نام کانال زنده
+ */
+function channelIdFromName($name) {
+    return vodIdFromName($name);
+}
+
+/**
  * دریافت محتوا با cURL برای بهینه‌سازی سرعت و ایمنی در Render/Docker
  */
 function fetchRemoteVodContent($url) {
@@ -35,7 +42,7 @@ function runVodPlaylistGenerate() {
 
     $include = filter_var($INCLUDE_ADULT_VOD ?? false, FILTER_VALIDATE_BOOLEAN);
 
-    // آدرس M3U مربوط به VOD (در صورت تغییر آدرس، این لینک را جایگزین کنید)
+    // آدرس M3U مربوط به VOD
     $playlistUrl = $include
         ? 'https://raw.githubusercontent.com/Behnood1368/Iptv/refs/heads/main/Kodi.m3u'
         : 'https://raw.githubusercontent.com/Behnood1368/Iptv/refs/heads/main/Kodi.m3u';
@@ -65,7 +72,7 @@ function runVodPlaylistGenerate() {
     $parsedData  = [];
     $categories  = [];
     $categoryMap = [];
-    $catCounter  = 500; // شروع ID دسته‌بندی فیلم‌ها از ۵۰۰ برای عدم تداخل با Live
+    $catCounter  = 500; // شروع ID دسته‌بندی فیلم‌ها از ۵۰۰
     $usedIds     = [];
     
     $currentVod = null;
@@ -119,7 +126,7 @@ function runVodPlaylistGenerate() {
                     "rating_5based"   => 2.5,
                     "added"           => (string)time(),
                     "category_id"     => $categoryMap[$group],
-                    "container_extension" => "mp4", // پسوند پیش‌فرض در صورت عدم تشخیص
+                    "container_extension" => "mp4",
                     "custom_sid"      => "",
                     "direct_source"   => "",
                     "video_url"       => ""
@@ -130,7 +137,7 @@ function runVodPlaylistGenerate() {
             $currentVod["direct_source"] = $line;
             $currentVod["video_url"]     = $line;
 
-            // تشخیص پسوند لینک ویدیو (مفید برای پلیرها مثل mkv, mp4, m3u8)
+            // تشخیص پسوند لینک ویدیو
             $pathInfo = pathinfo(parse_url($line, PHP_URL_PATH));
             if (isset($pathInfo['extension']) && !empty($pathInfo['extension'])) {
                 $currentVod["container_extension"] = strtolower($pathInfo['extension']);
@@ -147,10 +154,24 @@ function runVodPlaylistGenerate() {
     return $parsedData;
 }
 
-if (php_sapi_name() === "cli" || isset($_GET["debug"]) || isset($_GET["run"])) {
-    header("Content-Type: application/json; charset=utf-8");
-    echo json_encode(runVodPlaylistGenerate(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-}
+/**
+ * تابع پردازش لیست کانال‌های زنده (Live Channels)
+ */
+function runLivePlaylistGenerate() {
+    $playlistUrl = 'https://raw.githubusercontent.com/Behnood1368/Iptv/refs/heads/main/Kodi.m3u';
+    $categoriesFile = __DIR__ . "/channels/get_live_categories.json";
+    
+    $playlist = fetchRemoteVodContent($playlistUrl);
+    if ($playlist === false || empty(trim($playlist))) {
+        return [];
+    }
+
+    $lines = explode("\n", $playlist);
+    $parsedData  = [];
+    $categories  = [];
+    $categoryMap = [];
+    $catCounter  = 1;
+    $usedIds     = [];
 
     foreach ($lines as $line) {
         $line = trim($line);
@@ -216,14 +237,13 @@ if (php_sapi_name() === "cli" || isset($_GET["debug"]) || isset($_GET["run"])) {
         mkdir(dirname($categoriesFile), 0777, true);
     }
     file_put_contents($categoriesFile, json_encode($categories, JSON_PRETTY_PRINT));
-    file_put_contents('channels/live_playlist.json', json_encode($parsedData, JSON_PRETTY_PRINT));
+    file_put_contents(__DIR__ . '/channels/live_playlist.json', json_encode($parsedData, JSON_PRETTY_PRINT));
 
     return $parsedData;
 }
 
-
-// If run directly, output JSON
-if (php_sapi_name() === "cli" || isset($_GET["debug"])) {
-    header("Content-Type: application/json");
-    echo json_encode(runLivePlaylistGenerate(), JSON_PRETTY_PRINT);
+// اجرا در حالت CLI یا درخواست مستقیم HTTP
+if (php_sapi_name() === "cli" || isset($_GET["debug"]) || isset($_GET["run"])) {
+    header("Content-Type: application/json; charset=utf-8");
+    echo json_encode(runVodPlaylistGenerate(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 }
