@@ -1,33 +1,31 @@
- 
+# OPTIMIZED .HTACCESS FOR DOCKER / RENDER
+
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+
+Options +FollowSymLinks -Indexes
 RewriteEngine On
 RewriteBase /
 
-# Deny access to specific extensions for movie, series, and live URLs (Prevent MX Player's multiple requests)
+# 1. Block unwanted subtitle requests
 RewriteCond %{REQUEST_URI} \.(srt|ssa|ass|sub|smi|txt|idx|mpl|vtt|psb|sami|pjs|sup)$ [NC]
-RewriteRule ^(movie|series|live)/ - [R=404,L]
+RewriteRule ^(movie|series|live)/ - [F,L]
 
-# For movies
-RewriteCond %{REQUEST_URI} ^(.*/)(movie/.*) 
-RewriteRule ^movie/.*/([0-9]+) %1play.php?movieId=$1 [R=302,L]
+# 2. Redirect movies
+RewriteRule ^movie/.*/([0-9]+)$ play.php?movieId=$1 [QSA,L]
 
-# For series
-RewriteCond %{REQUEST_URI} ^(.*/)(series/.*)
-RewriteRule ^series/.*/([0-9]+)\.(.+)$ %1play.php?type=series&movieId=$1&data=$2 [R=302,L]
+# 3. Redirect series
+RewriteRule ^series/.*/([0-9]+)\.(.+)$ play.php?type=series&movieId=$1&data=$2 [QSA,L]
 
-# For live
-RewriteCond %{REQUEST_URI} ^(.*/)(live/.*)
-RewriteRule ^live/.*/([0-9]+)\.[a-z0-9]+$ %1live_play.php?streamId=$1 [R=302,L]
+# 4. Redirect live streams
+RewriteRule ^live/.*/([0-9]+)\.[a-z0-9]+$ live_play.php?streamId=$1 [QSA,L]
 
+# 5. Fallback for pure numeric stream IDs
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-# Match the URL pattern where the last segment is purely numeric
-RewriteRule ^(.*)/([0-9]+)$ %1/live_play.php?streamId=$2 [R=302,L]
+RewriteRule ^(live|stream)/.*/([0-9]+)$ live_play.php?streamId=$2 [QSA,L]
 
-# For Live M3U8 Playlist
-RewriteCond %{REQUEST_URI} ^(.*/)(tv\.m3u8)
-RewriteRule ^tv\.m3u8$ %1player_api.php?action=get_live_streams&type=m3u8 [R=302,L]
-
-# For Movies M3U8 Playlist
-RewriteCond %{REQUEST_URI} ^(.*/)(movies\.m3u8)
-RewriteRule ^movies\.m3u8$ %1player_api.php?action=get_vod_streams&type=m3u8 [R=302,L]
-بهینش 
+# 6. Shortcuts for Xtream Codes / IPTV
+RewriteRule ^tv\.m3u8$ player_api.php?action=get_live_streams&type=m3u8 [QSA,L]
+RewriteRule ^movies\.m3u8$ player_api.php?action=get_vod_streams&type=m3u8 [QSA,L]
