@@ -43,7 +43,7 @@ $userCreatePlaylist = false; // Set to false if you don't want to create any pla
 
 // Adds approximately 10,000 full-length adult movies to the VOD Movie playlist
 //under the category 'XXX Adult Movies'. This playlist is refreshed every Sunday.
-$INCLUDE_ADULT_VOD = false; // Set to true to include adult content.
+$INCLUDE_ADULT_VOD = true; // Set to true to include adult content.
 
 // Set how many movies and TV series you want in your playlist. TMDB shows 20 items on each page.
 // For instance, setting $totalPages to 150 could fetch approximately 35,000 movies across various genres and categories.
