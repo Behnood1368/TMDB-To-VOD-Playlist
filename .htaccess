@@ -1,4 +1,4 @@
-ببین جیمینای این پروژه یه.htaccess داره با محتوا:
+ 
 RewriteEngine On
 RewriteBase /
 
@@ -30,4 +30,4 @@ RewriteRule ^tv\.m3u8$ %1player_api.php?action=get_live_streams&type=m3u8 [R=302
 # For Movies M3U8 Playlist
 RewriteCond %{REQUEST_URI} ^(.*/)(movies\.m3u8)
 RewriteRule ^movies\.m3u8$ %1player_api.php?action=get_vod_streams&type=m3u8 [R=302,L]
-بهینش کن با htaccess مخصوص داکر
+بهینش 
