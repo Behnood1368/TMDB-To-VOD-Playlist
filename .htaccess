@@ -1,31 +1,29 @@
+# ==============================================================================
+# OPTIMIZED .HTACCESS FOR DOCKER / RENDER (PHP TMDB IPTV/PLAYER API)
+# ==============================================================================
+
+# فعال‌سازی موتور ری‌رایت
 RewriteEngine On
 RewriteBase /
 
-# Deny access to specific extensions for movie, series, and live URLs (Prevent MX Player's multiple requests)
+# ۱. مسدود کردن درخواست‌های زیرنویس اضافی (جلوگیری از هنگ کردن MX Player)
 RewriteCond %{REQUEST_URI} \.(srt|ssa|ass|sub|smi|txt|idx|mpl|vtt|psb|sami|pjs|sup)$ [NC]
 RewriteRule ^(movie|series|live)/ - [R=404,L]
 
-# For movies
-RewriteCond %{REQUEST_URI} ^(.*/)(movie/.*) 
-RewriteRule ^movie/.*/([0-9]+) %1play.php?movieId=$1 [R=302,L]
+# ۲. ریدایرکت فیلم‌ها به play.php
+RewriteRule ^movie/.*/([0-9]+)$ /play.php?movieId=$1 [R=302,L]
 
-# For series
-RewriteCond %{REQUEST_URI} ^(.*/)(series/.*)
-RewriteRule ^series/.*/([0-9]+)\.(.+)$ %1play.php?type=series&movieId=$1&data=$2 [R=302,L]
+# ۳. ریدایرکت سریال‌ها به play.php
+RewriteRule ^series/.*/([0-9]+)\.(.+)$ /play.php?type=series&movieId=$1&data=$2 [R=302,L]
 
-# For live
-RewriteCond %{REQUEST_URI} ^(.*/)(live/.*)
-RewriteRule ^live/.*/([0-9]+)\.[a-z0-9]+$ %1live_play.php?streamId=$1 [R=302,L]
+# ۴. ریدایرکت پخش زنده (Live) به live_play.php
+RewriteRule ^live/.*/([0-9]+)\.[a-z0-9]+$ /live_play.php?streamId=$1 [R=302,L]
 
+# ۵. پشتیبانی از آدرس‌های عددی خالص (Fallback)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-# Match the URL pattern where the last segment is purely numeric
-RewriteRule ^(.*)/([0-9]+)$ %1/live_play.php?streamId=$2 [R=302,L]
+RewriteRule ^.*/([0-9]+)$ /live_play.php?streamId=$1 [R=302,L]
 
-# For Live M3U8 Playlist
-RewriteCond %{REQUEST_URI} ^(.*/)(tv\.m3u8)
-RewriteRule ^tv\.m3u8$ %1player_api.php?action=get_live_streams&type=m3u8 [R=302,L]
-
-# For Movies M3U8 Playlist
-RewriteCond %{REQUEST_URI} ^(.*/)(movies\.m3u8)
-RewriteRule ^movies\.m3u8$ %1player_api.php?action=get_vod_streams&type=m3u8 [R=302,L]
+# ۶. میانبرهای فایل playlist.m3u8 برای اکستریم کد / IPTV
+RewriteRule ^tv\.m3u8$ /player_api.php?action=get_live_streams&type=m3u8 [R=302,L]
+RewriteRule ^movies\.m3u8$ /player_api.php?action=get_vod_streams&type=m3u8 [R=302,L]
