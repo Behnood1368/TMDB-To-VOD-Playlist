@@ -8,27 +8,26 @@ Options +FollowSymLinks -Indexes
 RewriteEngine On
 RewriteBase /
 
-# ۱. پاسخ سبک به ریشه سایت فقط برای رفع ارور Health Check (بدون رپیدایرکت)
-RewriteRule ^$ - [R=200,L]
-
-# ۲. مسدود کردن درخواست‌های زیرنویس اضافی
+# 1. Block unwanted subtitle requests
 RewriteCond %{REQUEST_URI} \.(srt|ssa|ass|sub|smi|txt|idx|mpl|vtt|psb|sami|pjs|sup)$ [NC]
 RewriteRule ^(movie|series|live)/ - [F,L]
 
-# ۳. مسیر فیلم‌ها به فایل play.php
+# 2. Redirect movies
 RewriteRule ^movie/.*/([0-9]+)$ play.php?movieId=$1 [QSA,L]
 
-# ۴. مسیر سریال‌ها به فایل play.php
+# 3. Redirect series
 RewriteRule ^series/.*/([0-9]+)\.(.+)$ play.php?type=series&movieId=$1&data=$2 [QSA,L]
 
-# ۵. مسیر پخش زنده به فایل live_play.php
+# 4. Redirect live streams
 RewriteRule ^live/.*/([0-9]+)\.[a-z0-9]+$ live_play.php?streamId=$1 [QSA,L]
 
-# ۶. آدرس‌های عددی خالص استریم
+# 5. Fallback for pure numeric stream IDs
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(live|stream)/.*/([0-9]+)$ live_play.php?streamId=$2 [QSA,L]
 
-# ۷. میانبرهای m3u8 برای Player API
+# 6. Shortcuts for Xtream Codes / IPTV
 RewriteRule ^tv\.m3u8$ player_api.php?action=get_live_streams&type=m3u8 [QSA,L]
 RewriteRule ^movies\.m3u8$ player_api.php?action=get_vod_streams&type=m3u8 [QSA,L]
+# هدایت ریشه سایت به فایل API
+DirectoryIndex player_api.php index.php index.html
