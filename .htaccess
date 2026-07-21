@@ -2,7 +2,6 @@
 # OPTIMIZED .HTACCESS FOR DOCKER / RENDER (PHP TMDB IPTV/PLAYER API)
 # ==============================================================================
 
-# فعال‌سازی موتور ری‌رایت
 RewriteEngine On
 RewriteBase /
 
@@ -10,20 +9,20 @@ RewriteBase /
 RewriteCond %{REQUEST_URI} \.(srt|ssa|ass|sub|smi|txt|idx|mpl|vtt|psb|sami|pjs|sup)$ [NC]
 RewriteRule ^(movie|series|live)/ - [R=404,L]
 
-# ۲. ریدایرکت فیلم‌ها به play.php
-RewriteRule ^movie/.*/([0-9]+)$ /play.php?movieId=$1 [R=302,L]
+# ۲. ریدایرکت فیلم‌ها به play.php (استفاده از [QSA,L] به جای R=302 برای انتقال داخلی)
+RewriteRule ^movie/.*/([0-9]+)$ play.php?movieId=$1 [QSA,L]
 
 # ۳. ریدایرکت سریال‌ها به play.php
-RewriteRule ^series/.*/([0-9]+)\.(.+)$ /play.php?type=series&movieId=$1&data=$2 [R=302,L]
+RewriteRule ^series/.*/([0-9]+)\.(.+)$ play.php?type=series&movieId=$1&data=$2 [QSA,L]
 
 # ۴. ریدایرکت پخش زنده (Live) به live_play.php
-RewriteRule ^live/.*/([0-9]+)\.[a-z0-9]+$ /live_play.php?streamId=$1 [R=302,L]
+RewriteRule ^live/.*/([0-9]+)\.[a-z0-9]+$ live_play.php?streamId=$1 [QSA,L]
 
-# ۵. پشتیبانی از آدرس‌های عددی خالص (Fallback)
+# ۵. پشتیبانی از آدرس‌های عددی خالص فقط در مسیرهای خاص (اصلاح شده)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^.*/([0-9]+)$ /live_play.php?streamId=$1 [R=302,L]
+RewriteRule ^(live|stream)/.*/([0-9]+)$ live_play.php?streamId=$2 [QSA,L]
 
 # ۶. میانبرهای فایل playlist.m3u8 برای اکستریم کد / IPTV
-RewriteRule ^tv\.m3u8$ /player_api.php?action=get_live_streams&type=m3u8 [R=302,L]
-RewriteRule ^movies\.m3u8$ /player_api.php?action=get_vod_streams&type=m3u8 [R=302,L]
+RewriteRule ^tv\.m3u8$ player_api.php?action=get_live_streams&type=m3u8 [QSA,L]
+RewriteRule ^movies\.m3u8$ player_api.php?action=get_vod_streams&type=m3u8 [QSA,L]
