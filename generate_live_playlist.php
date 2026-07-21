@@ -219,7 +219,7 @@ if (php_sapi_name() === "cli" || isset($_GET["debug"]) || isset($_GET["run"])) {
     file_put_contents('channels/live_playlist.json', json_encode($parsedData, JSON_PRETTY_PRINT));
 
     return $parsedData;
-}
+
 
 
 // If run directly, output JSON
